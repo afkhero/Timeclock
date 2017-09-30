@@ -1,0 +1,15 @@
+Our super fancy bug catalog!
+Open bugs are placed under the open header. Once they are solved we move them under the closed header.
+
+Most Recent Bug 0
+
+--- OPEN ---
+0 <9/30/17> 
+Here would be the description of the bug. The zero is the bug index and the date is the date this example bug was found.
+
+
+--- CLOSED ---
+
+-1 <9/30/17> <9/30/17>
+This another example bug description.
+Here would be the fix for this bug.
