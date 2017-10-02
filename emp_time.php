@@ -1,47 +1,48 @@
 <?php
-require_once ($_SERVER['DOCUMENT_ROOT']."/connections/db_connect8.php");
+define("BAD_DB", 1);
+define("EMPTY_RES", 2);
+define("MULTI_RES", 3);
+define("UNIQUE_RES", 4);
+define("BAD_EDIT", 5);
+define("SUCC", 0);
 
-echo $_SERVER['DOCUMENT_ROOT']."/connections/db_connect8.php<br>";
-
-emp_clk_in("54321");
-
-function emp_clk_in($rfid_no){
+function emp_clk_in($mysqli, $rfid_no){
 	if(!isset($mysqli)){
-		echo "No DB connection<br>";
-		return;
+		return BAD_DB;
 	}
+
 	$rfid = htmlspecialchars($rfid_no);
-	$sql = "SELECT operator FROM rfid WHERE rfid_no='$rfid'";
-	$result = mysqli_query($mysqli, $sql);
-	echo $sql."<br>";
-	$count = mysqli_num_rows($result);
-	echo $count."<br>";
+	$sql = "SELECT operator FROM rfid WHERE rfid_no='".$rfid."'";
+	$result = $mysqli->query($sql);
+
+	$count = $result->num_rows;
 	if($count == 0){
-		echo "Operator not found<br>";
+		return EMPTY_RES;
 	}
 	else if($count > 1){
-		echo "Operator could not be resolved<br>";
+		return MULTI_RES;
 	}
 	else { //you may clock in
-		$row = mysqli_fetch_assoc($result);
+		$row = $result->fetch_assoc();
+		$in_sql = "INSERT INTO time_clock ( staff_id, start_time ) VALUES ('".$row['operator']."', CURRENT_TIMESTAMP )";
+		$in_res = $mysqli->query($in_sql);
 
-		$ins_res = mysqli_query(mysqli, 'INSERT INTO `time_clock` ( staff_id, start_time ) VALUES ( '.$row['operator'].', CURRENT_TIMESTAMP )');
+		if($in_res){
+			//go to wiw
 
-		if($ins_res){
-			//go to wiw 
-			echo "<h1>Work Bitches</h1>";
+			return SUCC;
 		} else {
 			//display an error msg
-			echo "<i>guess I'm not working</i>";
+			return BAD_EDIT;
 		}
 	}
 }
 
-function emp_clk_out($rfid_no){
-
+function emp_clk_out($mysqli, $rfid_no){
+	
 }
 
-function emp_view_times($utaid, $date){
+function emp_view_times($mysqli, $utaid, $date){
 
 }
 

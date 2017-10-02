@@ -38,12 +38,13 @@ table, th, td{border: 1px solid black;}
 			Employee </p>
 			<p>
 				<form action="" method="POST">
-					<input type="submit" value="Clock In" name="emp_act">
-						<input type="text" placeholder="1000#" value="" name="user_id_in"><br>
-					<input type="submit" value="Clock Out" name="emp_act">
-						<input type="text" placeholder="1000#" value="" name="user_id_out"><br>
-					<input type="submit" value="View Times" name="emp_act">
-						<input type="date" placeholder="<?php echo date('m-d-y');?>" value="" name="emp_v_t"><br>
+					<input type="text" placeholder="rfid#" value="" name="rfid_in">
+						<input type="submit" value="Clock In" name="emp_act"><br>
+					<input type="text" placeholder="rfid#" value="" name="rfid_out">
+						<input type="submit" value="Clock Out" name="emp_act"><br>
+					<input type="date" placeholder="<?php echo date('m-d-y');?>" value="" name="emp_v_t"><br>
+						<input type="text" placeholder="1000#" name="emp_id">
+						<input type="submit" value="View Times" name="emp_act"><br>
 				</form>
 			</p>
 
@@ -59,7 +60,9 @@ table, th, td{border: 1px solid black;}
 
 #!-- Carry out Action --
 	if(isset($_POST['emp_act'])){
-
+		if(isset($_POST['rfid_in'])){ emp_clk_in($mysqli, $_POST['rfid_in']); }
+		if(isset($_POST['rfid_out'])){emp_clk_out($mysqli, $_POST['rfid_out']);}
+		if(isset($_POST['emp_v_t']) && isset($_POST['emp_id'])){emp_view_times($mysqli, $_POST['emp_id'], $_POST['emp_v_t']);}
 	}
 	elseif (isset($_POST['admin_act'])){
 		
