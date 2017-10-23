@@ -1,20 +1,23 @@
 <?php 
 	require_once ($_SERVER['DOCUMENT_ROOT']."/connections/db_connect8.php");
+	require_once 'wiw_connect.php';
+	include 'report.php';
 	include 'emp_time.php'; 
-	//include 'admin_time.php'; 
-	session_start(); 
+	//include 'admin_time.php';
+
+	$emp_time = new EmployeeTime($mysqli, $wiw);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Employee/Admin Clock in/out Page</title>
 <link rel="stylesheet" href="assets/css/bootstrap.min.css" type="text/css"  />
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 <style>
-table {border-collapse: collapse;}
-table, th, td{border: 1px solid black;}
+table {border-collapse: collapse; width: 50%;}
+table, th, td{border: 1px solid black; height: 25px; text-align: center;}
+table, p{font-size: 17px;}
 </style>
 
 <head><title>FA - TimeClock</title></head>
@@ -22,7 +25,7 @@ table, th, td{border: 1px solid black;}
 <body>
 <!-- Role Selection -->
 	<p>
-		<form action="" method="POST">
+		<form action="" method="GET">
 			<input type="submit" value="Employee" name="role">
 			<input type="submit" value="Admin" name="role">
 		</form>
@@ -30,12 +33,8 @@ table, th, td{border: 1px solid black;}
 <!-- Dashboard -->
 	<p>Role: 
 <?php 
-	if(isset($_POST['role']) || isset ($_SESSION['role'])){
-		if(isset($_POST['role'])){
-			$_SESSION['role'] = $_POST['role'];
-		}
-
-		if($_SESSION['role'] == "Employee"){	
+	if(isset ($_GET['role'])){
+		if($_GET['role'] == "Employee"){	
 ?>
 
 			Employee </p>
@@ -51,7 +50,7 @@ table, th, td{border: 1px solid black;}
 
 <?php
 	 	}
-		elseif($_SESSION['role'] == "Admin"){	
+		elseif($_GET['role'] == "Admin"){	
 			echo "Administration<br><bold><h1>Coming Soon!</h1></bold><br>";
 	 	}
 	}
@@ -61,8 +60,12 @@ table, th, td{border: 1px solid black;}
 
 #!-- Carry out Action --
 	if(isset($_POST['emp_act'])){
-		if($_POST['rfid'] != ""){emp_clk($mysqli, $_POST['rfid']); }
-		if($_POST['emp_v_t'] != "" && $_POST['emp_id'] != ""){emp_view_times($mysqli, $_POST['emp_id'], $_POST['emp_v_t']);}
+		if($_POST['rfid'] != ""){$emp_time->clock($_POST['rfid']);}
+		if($_POST['emp_v_t'] != "" && $_POST['emp_id'] != ""){
+			$times = $emp_time->view_times($_POST['emp_id'], $_POST['emp_v_t']);
+			echo $times->html();
+			echo "<br>";
+		}
 	}
 	elseif (isset($_POST['admin_act'])){
 		
@@ -72,14 +75,13 @@ table, th, td{border: 1px solid black;}
 <h1>Time Clock</h1>
 <table>
 	<tr>
-		<th>id</th>
 		<th>staff_id</th>
 		<th>start_time</th>
 		<th>end_time</th>
 		<th>duration</th>
 	</tr>
 <?php
-	$result = $mysqli->query("SELECT id,staff_id,start_time,end_time,duration FROM time_clock");
+	$result = $mysqli->query("SELECT staff_id,start_time,end_time,duration FROM time_clock");
 
 	while($row = $result->fetch_assoc()){
 		echo "<tr>";
