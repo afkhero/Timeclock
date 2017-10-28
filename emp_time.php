@@ -30,7 +30,7 @@ class EmployeeTime
 		
 		#find our date range
 		#pay periods are from the 1st to the 15th or the 16th to the end of the month
-		$date = date_create_from_format("m/j/y", $datestr);
+		$date = date_create_from_format("Y-m-j", $datestr);
 		$timestamp = $date->getTimestamp();
 		$begin_d = 1; 
 		$end_d = 15;

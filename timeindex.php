@@ -42,7 +42,7 @@ table, p{font-size: 17px;}
 				<form action="" method="POST">
 					<input type="text" placeholder="rfid#" value="" name="rfid">
 						<input type="submit" value="Clock" name="emp_act"><br>
-					<input type="date" placeholder="<?php echo date('m-d-y');?>" value="" name="emp_v_t"><br>
+					<input type="date" placeholder="<?php echo date('Y-m-j');?>" value="" name="emp_v_t"><br>
 						<input type="text" placeholder="1000#" value="" name="emp_id">
 						<input type="submit" value="View Times" name="emp_act"><br>
 				</form>

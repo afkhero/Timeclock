@@ -13,7 +13,7 @@ class Report{
 	private $body;	 //an array of tuples that make up the body 
 	private $footer; //a string with footer stuff in it
 
-	public function __construct($titlestr, $bodyobj, $footerstr){
+	public function __construct($titlestr='', $bodyobj=[''], $footerstr=''){
 		if(isset($titlestr)){
 			$this->title = $titlestr;
 		}
@@ -22,7 +22,6 @@ class Report{
 		}
 		if(isset($footerstr)){
 			$this->footer = $footerstr;
-		}
 	}
 
 	public function json(){
