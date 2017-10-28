@@ -1,5 +1,6 @@
 <?php
 require_once 'report.php';
+require_once 'result.php';
 
 # EmployeeTime: A class that encapsulates employee timeclock access functionality
 # The EmployeeTime class takes in an instance to a mysql DB and an instance to wheniwork.
@@ -8,12 +9,6 @@ require_once 'report.php';
 
 class EmployeeTime
 {
-	private $BAD_DB = 1;
-	private $EMPTY_RES = 2;
-	private $MULTI_RES = 3;
-	private $BAD_EDIT = 4;
-	private $SUCC = 0;
-
 	private $mysqli;
 	private $wiw;
 
@@ -35,7 +30,7 @@ class EmployeeTime
 		
 		#find our date range
 		#pay periods are from the 1st to the 15th or the 16th to the end of the month
-		$date = date_create_from_format("m-j-y", $datestr);
+		$date = date_create_from_format("m/j/y", $datestr);
 		$timestamp = $date->getTimestamp();
 		$begin_d = 1; 
 		$end_d = 15;
@@ -55,14 +50,14 @@ class EmployeeTime
 		#pull our student workers name from wiw via our utaid to wiwid lookup table
 		$wiw_id_res = $this->mysqli->query("SELECT wiw_id FROM wiw WHERE uta_id='".$utaid."'");
 		if($wiw_id_res->num_rows == 0){
-			return $this->EMPTY_RES;
+			return Result::e_emptySet();#$this->EMPTY_RES;
 		}
 		if($wiw_id_res->num_rows > 1){
-			return $this->MULTI_RES;
+			return Result::e_ambiguous();#$this->MULTI_RES;
 		}
 		$wiw_id = $wiw_id_res->fetch_assoc();
 		if($wiw_id == false){
-			return $this->EMPTY_RES;
+			return Result::e_emptySet();#$this->EMPTY_RES;
 		}
 
 		$user_obj = $this->wiw->get("users/".$wiw_id['wiw_id']);
@@ -102,10 +97,10 @@ class EmployeeTime
 		$result = $this->mysqli->query($sql);
 
 		if($result->num_rows == 0){// couldn't find operator
-			return $this->EMPTY_RES;
+			return Result::e_emptySet();#$this->EMPTY_RES;
 		}
 		else if($result->num_rows > 1){// couldn't resolve operator
-			return $this->MULTI_RES;
+			return Result::e_ambiguous();#$this->MULTI_RES;
 		}
 		else {
 			$row = $result->fetch_array();
@@ -113,7 +108,7 @@ class EmployeeTime
 			$clk_res = $this->mysqli->query($clk_sql);
 
 			if($clk_res->num_rows > 1){// operator clocked in mult. times
-				return $this->MULTI_RES;
+				return Result::e_ambiguous();#$this->MULTI_RES;
 			}
 			else if($clk_res->num_rows == 0){// operator not clocked in so lets do that
 				return $this->clock_in($row['operator']);
@@ -129,20 +124,18 @@ class EmployeeTime
 		$sql = "INSERT INTO time_clock ( staff_id, start_time ) VALUES ('$utaid', CURRENT_TIMESTAMP )";
 		$res = $this->mysqli->query($sql);
 		if($res){
-			//call WIW
-			return $this->SUCC;
+			return Result::success();#$this->SUCC;
 		}
-		return $this->BAD_EDIT;
+		return Result::e_edit();#$this->BAD_EDIT;
 	}
 
 	private function clock_out($utaid){
 		$sql = "UPDATE time_clock SET end_time=CURRENT_TIMESTAMP, duration=SEC_TO_TIME(TIMESTAMPDIFF(SECOND, start_time, CURRENT_TIMESTAMP)) WHERE staff_id='$utaid' AND end_time is NULL";
 		$res = $this->mysqli->query($sql);
 		if($res){
-			//call WIW
-			return $this->SUCC;
+			return Result::success();#$this->SUCC;
 		}
-		return $this->BAD_EDIT;
+		return Result::e_edit();#$this->BAD_EDIT;
 	}
 }
 ?>
