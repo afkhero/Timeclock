@@ -3,9 +3,10 @@
 	require_once 'wiw_connect.php';
 	include 'report.php';
 	include 'emp_time.php'; 
-	//include 'admin_time.php';
+	include 'admin_time.php';
 
 	$emp_time = new EmployeeTime($mysqli, $wiw);
+	$admin_time = new AdminTime($mysqli, $wiw);
 ?>
 
 <!DOCTYPE html>
