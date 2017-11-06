@@ -3,9 +3,10 @@
 	require_once 'wiw_connect.php';
 	include 'report.php';
 	include 'emp_time.php'; 
-	//include 'admin_time.php';
+	include 'admin_time.php';
 
 	$emp_time = new EmployeeTime($mysqli, $wiw);
+	$admin_time = new AdminTime($mysqli, $wiw);
 ?>
 
 <!DOCTYPE html>
@@ -51,7 +52,20 @@ table, p{font-size: 17px;}
 <?php
 	 	}
 		elseif($_GET['role'] == "Admin"){	
-			echo "Administration<br><bold><h1>Coming Soon!</h1></bold><br>";
+?>
+				Admin </p>
+				<p>
+					<form action="" method="POST">
+						<input type="text" placeholder="1000#", value="" name="admin_e_uid"><br>
+							<input type="text" placeholder="timeclock id" value="" name="admin_e_tid"><br>
+							<input type="date" placeholder="<?php echo date('Y-m-j H:i');?>" value="" name="admin_e_s">new start time<br>
+							<input type="date" placeholder="<?php echo date('Y-m-j H:i');?>" value="" name="admin_e_e">new end time<br>
+							<input type="submit" value="Edit" name="admin_act"><br>
+					</form>
+				</p>
+
+
+<?php
 	 	}
 	}
 	else{
@@ -61,6 +75,7 @@ table, p{font-size: 17px;}
 #!-- Carry out Action --
 	if(isset($_POST['emp_act'])){
 		if($_POST['rfid'] != ""){$emp_time->clock($_POST['rfid']);}
+
 		if($_POST['emp_v_t'] != "" && $_POST['emp_id'] != ""){
 			$times = $emp_time->view_times($_POST['emp_id'], $_POST['emp_v_t']);
 			echo $times->html();
@@ -68,20 +83,28 @@ table, p{font-size: 17px;}
 		}
 	}
 	elseif (isset($_POST['admin_act'])){
-		
+		if($_POST['admin_e_uid'] != "" && $_POST['admin_e_tid'] != "" && 
+           $_POST['admin_e_s'] != ""&& $_POST['admin_e_e'] != ""){
+			$admin_time->edit_time($_POST['admin_e_uid'], $_POST['admin_e_tid'],
+		                          DateTime::createFromFormat("Y-m-d H:i", $_POST['admin_e_s']),
+		                          DateTime::createFromFormat("Y-m-d H:i", $_POST['admin_e_e']));
+		}
+
+
 	}
 ?>
 <!-- View DataBase -->
 <h1>Time Clock</h1>
 <table>
 	<tr>
+		<th>id</th>
 		<th>staff_id</th>
 		<th>start_time</th>
 		<th>end_time</th>
 		<th>duration</th>
 	</tr>
 <?php
-	$result = $mysqli->query("SELECT staff_id,start_time,end_time,duration FROM time_clock");
+	$result = $mysqli->query("SELECT id,staff_id,start_time,end_time,duration FROM time_clock");
 
 	while($row = $result->fetch_assoc()){
 		echo "<tr>";
