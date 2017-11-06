@@ -67,8 +67,34 @@ table, p{font-size: 17px;}
 			echo "<br>";
 		}
 	}
-	elseif (isset($_POST['admin_act'])){
-		
+	elseif (isset($_POST['admin_list'])){
+		$startday = $_POST['startday'];
+		$endday = $_POST['endday'];
+
+		$result = $mysqli->query("SELECT wiw_id, uta_id, name, SEC_TO_TIME( SUM(TIME_TO_SEC(duration))) AS h_worked
+				FROM time_clock t join wiw w on t.staff_id = w.uta_id
+				WHERE start_time BETWEEN date('$startday') AND date('$endday')
+				group by uta_id");
+		echo "<table>";
+
+			echo "<tr>";
+			echo "<th>"; echo "wiw_id"; echo "</th>";
+			echo "<th>"; echo "uta_id"; echo "</th>";
+			echo "<th>"; echo "name"; echo "</th>";
+			echo "<th>"; echo "h_worked"; echo "</th>";
+			echo "</tr>";
+
+		while ($row=$result->fetch_assoc()) {
+			echo "<tr>";
+
+			$keys = array_keys($row);
+			foreach($keys as $key){
+				echo "<td>".$row[$key]."</td>";
+			}
+
+			echo "</tr>";
+		}
+		echo "</table>";
 	}
 ?>
 <!-- View DataBase -->
