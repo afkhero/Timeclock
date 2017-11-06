@@ -62,9 +62,6 @@ class EmployeeTime
 
 		$user_obj = $this->wiw->get("users/".$wiw_id['wiw_id']);
 		$name = "".$user_obj->user->first_name." ".$user_obj->user->last_name;
-
-		$sqlinsert = "UPDATE wiw SET name = '".$name."' where uta_id = '".$utaid."'";
-		$res_insert = $this->mysqli->query($sqlinsert);
 		
 		#lets build our report
 		$title = "Timesheet: ".$name;
