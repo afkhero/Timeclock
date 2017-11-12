@@ -1,5 +1,5 @@
 <?php 
-	require_once ($_SERVER['DOCUMENT_ROOT']."/connections/db_connect8.php");
+	require_once ($_SERVER['DOCUMENT_ROOT']."/timeclock/connections/db_connect8.php");
 	require_once 'wiw_connect.php';
 	include 'report.php';
 	include 'emp_time.php'; 
@@ -56,16 +56,23 @@ table, p{font-size: 17px;}
 		elseif($_GET['role'] == "Admin"){	
 ?>
 				Admin </p>
+				Edit/Update</p>
 				<p>
 					<form action="" method="POST">
 						<input type="text" placeholder="1000#", value="" name="admin_e_uid"><br>
-							<input type="text" placeholder="timeclock id" value="" name="admin_e_tid"><br>
-							<input type="date" placeholder="<?php echo date('Y-m-j H:i');?>" value="" name="admin_e_s">new start time<br>
-							<input type="date" placeholder="<?php echo date('Y-m-j H:i');?>" value="" name="admin_e_e">new end time<br>
-							<input type="submit" value="New" name="admin_act">
-							<input type="submit" value="Edit" name="admin_act"><br>
+						<input type="text" placeholder="timeclock id" value="" name="admin_e_tid"><br>
+						<input type="date" placeholder="<?php echo date('Y-m-j H:i');?>" value="" name="admin_e_s">new start time<br>
+						<input type="date" placeholder="<?php echo date('Y-m-j H:i');?>" value="" name="admin_e_e">new end time<br>
+						<input type="submit" value="New" name="admin_act">
+						<input type="submit" value="Edit" name="admin_act"><br><br><br>
+
+				List Staff </p>
+						<input type="date" placeholder="<?php echo date('Y-m-j');?>" value="" name="startday"><br>
+						<input type="date" placeholder="<?php echo date('Y-m-j');?>" value="" name="endday"><br>
+						<input type="submit" name="admin_act" value="List">
 					</form>
 				</p>
+
 <?php
 		}
 	}
@@ -103,7 +110,16 @@ table, p{font-size: 17px;}
 	       $_POST['admin_e_s'] != "" && $_POST['admin_e_e'] != ""){
 			echo "insert under construction<br>";
 		}
+
+		if($_POST['admin_act'] == "List"){
+			$startday = $_POST['startday'];
+			$endday = $_POST['endday'];
+
+			$list = $admin_time->list_staff($startday, $endday);
+		}
+
 	}
+
 ?>
 <!-- View DataBase -->
 <div name="DataBase" class="column">

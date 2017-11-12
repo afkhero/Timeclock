@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html>
+
 <?php
 require_once 'report.php';
 require_once 'result.php';
@@ -55,8 +58,54 @@ class AdminTime{
                 $updateQuery = mysqli_query($this->mysqli, "UPDATE time_clock SET start_time='$start_time', end_time='$end_time',duration=SEC_TO_TIME(TIMESTAMPDIFF(SECOND, start_time, end_time)) WHERE id=$shiftID");
             }
         }
-}
+	}
 
-}
+	function list_staff($startday, $endday){
 
+	$wiw_id_res = $this->mysqli->query("SELECT wiw_id, uta_id, SEC_TO_TIME( SUM(TIME_TO_SEC(duration))) AS h_worked
+				FROM time_clock t join wiw w on t.staff_id = w.uta_id
+				WHERE start_time BETWEEN date('$startday') AND date('$endday')
+				group by uta_id" );
+
+	$list = array();
+	while($row = $wiw_id_res->fetch_assoc()){
+		$item = array();
+
+		$user_obj = $this->wiw->get("users/".$row['wiw_id']);
+		$name = "".$user_obj->user->first_name." ".$user_obj->user->last_name;
+		$item[] = $name;
+		$item[] = $row['wiw_id'];
+		$item[] = $row['uta_id'];
+		$item[] = $row['h_worked'];
+		$list[] = $item;
+	}
 ?>
+
+<table>
+		<tr>
+			<th>Name</th>
+			<th>Wiw_ID</th>
+			<th>UTA_ID</th>
+			<th>H-Worked</th>
+		</tr>
+<?php
+
+	foreach ($list as $value) {
+		echo "<tr>";
+		echo "<td>".$value['0']."</td>";
+		echo "<td>".$value['1']."</td>";
+		echo "<td>".$value['2']."</td>";
+		echo "<td>".$value['3']."</td>";
+		echo "</tr>";
+	}
+?>
+</table>
+
+<?php
+
+	}
+}
+?>
+
+
+</html>
