@@ -68,16 +68,16 @@ table, p{font-size: 17px;}
 				</p>
 <?php
 		}
+	}
+	else{
+		echo "Choose<br>";
+	}
+
 ?>
 
 	</div>
 
 <?php
-
-	}
-	else{
-		echo "Choose<br>";
-	}
 
 #!-- Carry out Action --
 	if(isset($_POST['emp_act'])){
@@ -90,7 +90,7 @@ table, p{font-size: 17px;}
 		}
 	}
 	elseif (isset($_POST['admin_act'])){
-		if($_POST['admin_act'] == "New" &&
+		if($_POST['admin_act'] == "Edit" &&
 		   $_POST['admin_e_uid'] != "" && $_POST['admin_e_tid'] != "" && 
            $_POST['admin_e_s'] != ""&& $_POST['admin_e_e'] != ""){
 			$admin_time->edit_time($_POST['admin_e_uid'], $_POST['admin_e_tid'],
@@ -98,7 +98,7 @@ table, p{font-size: 17px;}
 		                          DateTime::createFromFormat("Y-m-d H:i", $_POST['admin_e_e']));
 		}
 
-		if($_POST['admin_act'] == "Edit" && 
+		if($_POST['admin_act'] == "New" && 
 	       $_POST['admin_e_uid'] != "" && 
 	       $_POST['admin_e_s'] != "" && $_POST['admin_e_e'] != ""){
 			echo "insert under construction<br>";
@@ -131,7 +131,7 @@ table, p{font-size: 17px;}
 		}
 ?>
 	</table>
-	</div>
+</div>
 </div>
 
 </body>

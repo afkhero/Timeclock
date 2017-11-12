@@ -1,0 +1,1 @@
+php -f ~/fabapp/timeclock/pull_shifts.php
