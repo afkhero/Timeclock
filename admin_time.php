@@ -68,8 +68,9 @@ class AdminTime{
             $start_time = $startTime->format("Y-m-d H:i");
             $end_time = $endTime->format("Y-m-d H:i");
             
-            $insertQuery = mysqli_query($this->mysqli, "INSERT INTO `time_clock` (`id`, `staff_id`, `start_time`, `end_time`, `duration`) VALUES (NULL,`$staffID`,`$start_time`,`$end_time`,duration=SEC_TO_TIME(TIMESTAMPDIFF(SECOND, start_time, end_time)))");
+            $insertQuery = mysqli_query($this->mysqli, "INSERT INTO `time_clock` (`id`, `staff_id`, `start_time`, `end_time`, `duration`) VALUES (NULL,'$staffID','$start_time','$end_time', SEC_TO_TIME(TIMESTAMPDIFF(SECOND, start_time, end_time)))");
             
+
         
             
             
