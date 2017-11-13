@@ -1,6 +1,3 @@
-<!DOCTYPE html>
-<html>
-
 <?php
 require_once 'report.php';
 require_once 'result.php';
@@ -16,8 +13,6 @@ class AdminTime{
 	}
 
 	function edit_time($userID, $shiftID, $startTime, $endTime){
-        #$userID = strip_tags($userID);
-        #$userID = htmlspecialchars($userID);
         
         #Admin has to enter the 1000 number of the user he wishes to change the time of ""
 		$userSelection = mysqli_query($this->mysqli, "SELECT staff_id FROM time_clock WHERE staff_id='".$userID."';");
@@ -60,52 +55,128 @@ class AdminTime{
         }
 	}
 
-	function list_staff($startday, $endday){
+	function list_staff(){
+		$today = new DateTime();
+		$timestamp = $today->getTimestamp();
 
-	$wiw_id_res = $this->mysqli->query("SELECT wiw_id, uta_id, SEC_TO_TIME( SUM(TIME_TO_SEC(duration))) AS h_worked
-				FROM time_clock t join wiw w on t.staff_id = w.uta_id
-				WHERE start_time BETWEEN date('$startday') AND date('$endday')
-				group by uta_id" );
+		switch($today->format("D")){
+			case "Mon": $bwp = false; $ewp = "P6D";
+				break;
+			case "Tue": $bwp = "P1D"; $ewp = "P5D";
+				break;
+			case "Wed": $bwp = "P2D"; $ewp = "P4D";
+				break;
+			case "Thur": $bwp = "P3D"; $ewp = "P3D";
+				break;
+			case "Fri": $bwp = "P4D"; $ewp = "P2D";
+				break;
+			case "Sat": $bwp = "P5D"; $ewp = "P1D";
+				break;
+			case "Sun": $bwp = "P6D"; $ewp = false;
+				break;
+			default: return false;
+		}
 
-	$list = array();
-	while($row = $wiw_id_res->fetch_assoc()){
-		$item = array();
+		$begin_w = new DateTime();
+		$end_w = new DateTime();
 
-		$user_obj = $this->wiw->get("users/".$row['wiw_id']);
-		$name = "".$user_obj->user->first_name." ".$user_obj->user->last_name;
-		$item[] = $name;
-		$item[] = $row['wiw_id'];
-		$item[] = $row['uta_id'];
-		$item[] = $row['h_worked'];
-		$list[] = $item;
-	}
-?>
+		if($bwp){
+			$begin_w->sub(new DateInterval($bwp));
+		}
 
-<table>
-		<tr>
-			<th>Name</th>
-			<th>Wiw_ID</th>
-			<th>UTA_ID</th>
-			<th>H-Worked</th>
-		</tr>
-<?php
+		if($ewp){
+			$end_w->add(new DateInterval($ewp));			
+		}
 
-	foreach ($list as $value) {
-		echo "<tr>";
-		echo "<td>".$value['0']."</td>";
-		echo "<td>".$value['1']."</td>";
-		echo "<td>".$value['2']."</td>";
-		echo "<td>".$value['3']."</td>";
-		echo "</tr>";
-	}
-?>
-</table>
+		$begin_w->setTime(0, 0, 0);
+		$end_w->setTime(23, 59, 59);
 
-<?php
+		$bppd = 1;
+		$eppd = 15;
 
+		if(idate('d', $timestamp) > 15){
+			$bppd = 16;
+			$eppd = idate('t', $timestamp);
+		}
+
+		$timestamp = $today->getTimestamp();
+		$begin_pp = date_date_set(date_create(), idate('Y', $timestamp), idate('m', $timestamp), $bppd);
+		$end_pp = date_date_set(date_create(), idate('Y', $timestamp), idate('m', $timestamp), $eppd);
+
+		$begin_pp->setTime(0, 0, 0);
+		$end_pp->setTime(23, 59, 59);
+
+/******************************************************
+		This is the query to get a student's:
+			1) wheniwork id
+			2) uta 1000#
+			3) hours they worked in the current week
+			   (NULL if they haven't worked)
+			4) hours they have worked in the current pay period
+			   (NULL again if they haven't worked)
+
+		SELECT wiw_id, uta_id, hr_week, hr_payp
+		FROM (
+			SELECT wiw_id, uta_id
+			FROM wiw
+		) people
+		LEFT JOIN (
+			SELECT weekly.staff_id AS staffid, hr_week, hr_payp
+			FROM (
+				SELECT staff_id, SEC_TO_TIME(SUM(TIME_TO_SEC(duration))) as hr_week
+				FROM time_clock 
+				WHERE start_time BETWEEN '?' AND '?'
+				GROUP BY staff_id
+			) weekly
+			JOIN (
+				SELECT staff_id, SEC_TO_TIME(SUM(TIME_TO_SEC(duration))) as hr_payp
+				FROM time_clock 
+				WHERE start_time BETWEEN '?' AND '?'
+				GROUP BY staff_id
+			) payper
+			ON weekly.staff_id=payper.staff_id
+		) hours
+		ON uta_id=staffid;
+******************************************************/
+
+		$query = $this->mysqli->prepare("SELECT wiw_id, uta_id, hr_week, hr_payp FROM (SELECT wiw_id, uta_id FROM wiw) people LEFT JOIN (SELECT weekly.staff_id AS staffid, hr_week, hr_payp FROM (SELECT staff_id, SEC_TO_TIME(SUM(TIME_TO_SEC(duration))) as hr_week FROM time_clock WHERE start_time BETWEEN ? AND ? GROUP BY staff_id) weekly JOIN (SELECT staff_id, SEC_TO_TIME(SUM(TIME_TO_SEC(duration))) as hr_payp FROM time_clock WHERE start_time BETWEEN ? AND ? GROUP BY staff_id) payper ON weekly.staff_id=payper.staff_id ) hours ON uta_id=staffid;");
+
+		$bw_str = $begin_w->format('Y-m-d H:i:s');
+		$ew_str = $end_w->format('Y-m-d H:i:s');
+		$bpp_str = $begin_pp->format('Y-m-d H:i:s');
+		$epp_str = $end_pp->format('Y-m-d H:i:s');
+
+		$query->bind_param('ssss', $bw_str, $ew_str, $bpp_str, $epp_str);
+		
+		$query->bind_result($wiw_id, $uta_id, $hr_week, $hr_payp);
+
+		$list = array();
+		$list[] = ['Name', 'UTA ID', 'Week', 'Pay Period'];
+		while($query->fetch()){
+
+			$item = array();
+			$user_obj = $this->wiw->get("users/".$wiw_id);
+			$name = "".$user_obj->user->first_name." ".$user_obj->user->last_name;
+
+			$item[] = $name;
+			$item[] = $uta_id;
+
+			if($hr_week == NULL){
+				$item[] = "00:00:00";
+			}else{
+				$item[] = $hr_week;
+			}
+
+			if($hr_payp == NULL){
+				$item[] = "00:00:00";
+			}else{
+				$item[] = $hr_payp;
+			}
+
+			$list[] = $item;
+		}
+
+		return new Report("Employees",$list);
 	}
 }
 ?>
-
-
-</html>
