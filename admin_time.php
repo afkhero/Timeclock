@@ -2,7 +2,7 @@
 <html>
 
 <?php
-require_once 'report.php';
+//require_once 'report.php';
 require_once 'result.php';
 
 class AdminTime{
@@ -59,7 +59,22 @@ class AdminTime{
             }
         }
 	}
-
+        
+        function new_time($staffID, $startTime, $endTime)
+        {
+            $staffID = strip_tags($staffID);
+            $staffID = htmlspecialchars($staffID);
+            
+            $start_time = $startTime->format("Y-m-d H:i");
+            $end_time = $endTime->format("Y-m-d H:i");
+            
+            $insertQuery = mysqli_query($this->mysqli, "INSERT INTO `time_clock` (`id`, `staff_id`, `start_time`, `end_time`, `duration`) VALUES (NULL,`$staffID`,`$start_time`,`$end_time`,duration=SEC_TO_TIME(TIMESTAMPDIFF(SECOND, start_time, end_time)))");
+            
+        
+            
+            
+        }
+        
 	function list_staff($startday, $endday){
 
 	$wiw_id_res = $this->mysqli->query("SELECT wiw_id, uta_id, SEC_TO_TIME( SUM(TIME_TO_SEC(duration))) AS h_worked
